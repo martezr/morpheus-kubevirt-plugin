@@ -1,0 +1,81 @@
+resource "instance-type" "kubevirt" {
+  code                 = "kubevirt"
+  name                 = "kubevirt"
+  category             = "cloud"
+  active               = true
+  enabled              = true
+  viewSet              = "kubevirt"
+  stackTier            = 30
+  hasConfig            = false
+  hasSettings          = false
+  hasDeployment        = false
+  versions             = ["1.0"]
+  hasAutoScale         = true
+  description          = "Cloud computing designed for developers. Provisions any Digital Ocean Droplet VM."
+  provisionTypeDefault = true
+  environmentPrefix    = "OCEAN"
+  backupType           = "kubevirtSnapshot"
+  provisionSelectType  = "zone"
+  provisionType = "kubevirt"
+  pluginIconPath = "kubevirt.svg"
+  pluginIconDarkPath = "kubevirt.svg"
+  pluginIconHidpiPath = "kubevirt.svg"
+  pluginIconDarkHidpiPath = "kubevirt.svg"
+  optionTypes = [
+    "instanceType.exposePorts"
+  ]
+}
+
+resource "workload-type" "kubevirt-1_0" {
+  code             = "kubevirt-1.0"
+  shortName        = "kubevirt"
+  name             = "Digital Ocean VM"
+  ports            = []
+  containerVersion = "1.0"
+  repositoryImage  = ""
+  entryPoint       = ""
+  category         = "kubevirt"
+  statTypeCode     = "vm"
+  logTypeCode      = "kubevirt"
+  checkTypeCode    = "vmCheck"
+  serverType       = "vm"
+  mountPoint       = "/data"
+  provisionType = "kubevirt"
+  actions = ["generic-remove-node"]
+  backupType = "kubevirtSnapshot"
+}
+
+resource "workload-type-set" "kubevirt-1_0-set" {
+  code          = "kubevirt-1.0-set"
+  workloadType = workload-type.kubevirt-1_0
+  priorityOrder  = 0
+  dynamicCount   = true
+  containerCount = 1
+}
+
+resource "instance-type-layout" "kubevirt-1_0-single" {
+  code            = "kubevirt-1.0-single"
+  name            = "kubevirt VM"
+  sortOrder       = 0
+  instanceVersion = "1.0"
+  description     = "This will provision a single process with no redundancy"
+  instanceType = instance-type.kubevirt
+  serverCount = 1
+  portCount   = 1
+  enabled     = true
+  creatable   = true
+  containers  = [
+    workload-type-set.kubevirt-1_0-set
+  ]
+  actions = ["generic-add-node"]
+  optionTypes   = []
+  provisionType = "kubevirt"
+}
+
+resource "scale-action" "kubevirt-1_0-single" {
+  code      = "kubevirt-1.0-single"
+  scaleType = "action"
+  layout = instance-type-layout.kubevirt-1_0-single
+  upAction = "generic-add-node"
+  downAction = "generic-remove-node"
+}

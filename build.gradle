@@ -1,0 +1,51 @@
+plugins {
+    id "com.bertramlabs.asset-pipeline" version "3.3.2"
+    id "com.github.johnrengelman.shadow" version "5.1.0"
+}
+
+apply plugin: 'java'
+apply plugin: 'groovy'
+apply plugin: 'maven-publish'
+
+group = 'com.morpheusdata'
+version = '0.0.5'
+
+sourceCompatibility = '1.11'
+targetCompatibility = '1.11'
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'io.fabric8:kubernetes-client:6.8.0'
+    implementation 'io.fabric8:kubernetes-client-api:6.8.0'
+    implementation 'io.fabric8:kubernetes-httpclient-okhttp:6.8.0'
+    compileOnly 'com.morpheusdata:morpheus-plugin-api:1.0.5'
+    compileOnly 'org.codehaus.groovy:groovy-all:2.5.6'
+    compileOnly 'io.reactivex.rxjava2:rxjava:2.2.0'
+    compileOnly "org.slf4j:slf4j-api:1.7.26"
+    compileOnly "org.slf4j:slf4j-parent:1.7.26"
+}
+
+jar {
+    manifest {
+        attributes(
+            'Morpheus-Name': 'Kubevirt',
+            'Morpheus-Organization': 'morpheus',
+            'Morpheus-Code': 'moprheus-kubevirt',
+            'Morpheus-Description': 'Plugin for Kubevirt',
+            'Morpheus-Logo': 'assets/kubevirt-plugin.svg',
+            'Morpheus-Logo-Dark': 'assets/kubevirt-plugin.svg',
+            'Morpheus-Labels': 'Plugin, Cloud, Kubevirt',
+            'Morpheus-Repo': 'https://github.com/martezr/morpheus-kubevirt-plugin',
+            'Morpheus-Min-Appliance-Version': "6.3.0",
+            'Plugin-Class': 'com.morpheusdata.kubevirt.plugin.KubevirtPlugin',
+            'Plugin-Version': archiveVersion.get() // Get version defined in gradle
+        )
+    }
+}
+
+tasks.assemble.dependsOn tasks.shadowJar
